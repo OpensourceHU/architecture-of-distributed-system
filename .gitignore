@@ -10,6 +10,7 @@ env/
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
 
 # VS Code local state (keep .vscode/ if you share settings, but ignore workspace storage)
 .vscode/*

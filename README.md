@@ -29,7 +29,8 @@ dependencies from `pyproject.toml` / `uv.lock`.
 necessary to activate it manually:
 
 ```bash
-uv run python main.py
+uv run python main.py         # dispatcher
+uv run python src/main.py     # worker (uses a src/ layout, see Testing below)
 ```
 
 If you want an activated shell instead (to use `python`, `pip`, etc.
@@ -76,3 +77,32 @@ worker thread. Keep that in mind before debugging:
 - A background thread (e.g. the dispatcher's heartbeat-timeout monitor loop)
   pausing at a breakpoint while the RPC server keeps accepting connections
   on the main thread is expected, not a hang.
+
+## Testing
+
+Services that communicate over RPyC are tested in three layers, trading off
+speed against fidelity to the real deployment:
+
+1. **Unit tests** — pure functions only (e.g. chunk splitting, keyword
+   counting), no sockets, no Redis. Fastest, run constantly.
+2. **Service-level integration tests** — start the real RPyC
+   `ThreadedServer` in-process (a background thread inside the test) on an
+   ephemeral port, backed by an in-memory fake Redis (`fakeredis`), and talk
+   to it with a real `rpyc.connect(...)` client. This exercises the actual
+   RPC wire protocol and cache read/write logic without paying the cost of
+   building/starting Docker containers, so it's still fast enough to run on
+   every local test invocation. See
+   `phase2/app/worker/tests/test_service_integration.py`.
+3. **Docker/compose end-to-end tests** — the full cluster (worker, real
+   Redis, dispatcher) built and started via `docker compose`, exercised over
+   the network exactly as it runs in production. Slowest and closest to
+   reality; not yet implemented for this project, intended to run in CI or
+   before a submission/demo rather than on every local change.
+
+Run a service's tests with `uv`, from that service's directory:
+
+```bash
+cd phase2/app/worker
+uv sync --group dev   # installs pytest + fakeredis alongside the app deps
+uv run pytest
+```

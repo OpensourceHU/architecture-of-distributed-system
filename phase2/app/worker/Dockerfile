@@ -3,8 +3,8 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 WORKDIR /app
 
 COPY pyproject.toml ./
-RUN uv sync
+RUN uv sync --no-dev
 
-COPY . .
+COPY src/ ./src/
 
-CMD ["uv", "run", "python", "main.py"]
+CMD ["uv", "run", "python", "src/main.py"]

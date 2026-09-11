@@ -10,9 +10,12 @@ services:
       context: ./app/worker
     depends_on:
       - dispatcher
+      - redis
     environment:
       DISPATCHER_HOST: dispatcher
       DISPATCHER_PORT: 18861
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
 
   redis:
     image: redis:7-alpine
