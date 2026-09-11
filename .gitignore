@@ -1,1 +1,18 @@
 .DS_Store
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python byte-code & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code local state (keep .vscode/ if you share settings, but ignore workspace storage)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
