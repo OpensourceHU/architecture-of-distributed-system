@@ -1,7 +1,7 @@
 {
     "python-envs.pythonProjects": [
         {
-            "path": "phase2/app/worker",
+            "path": "phase2-implementation-of-the-service/app/worker",
             "envManager": "ms-python.python:venv",
             "packageManager": "ms-python.python:pip"
         }

@@ -12,11 +12,12 @@ Word Count Service — lab assignment for Architecture of Distributed Systems.
 
 ## Running Locally
 
-Each service (e.g. `phase2/app/dispatcher`, `phase2/app/worker`) is its own
-`uv` project. To work on one outside of Docker Compose:
+Each service (e.g. `phase2-implementation-of-the-service/app/dispatcher`,
+`phase2-implementation-of-the-service/app/worker`) is its own `uv` project.
+To work on one outside of Docker Compose:
 
 ```bash
-cd phase2/app/dispatcher   # or phase2/app/worker
+cd phase2-implementation-of-the-service/app/dispatcher   # or app/worker
 uv sync
 ```
 
@@ -92,7 +93,7 @@ speed against fidelity to the real deployment:
    RPC wire protocol and cache read/write logic without paying the cost of
    building/starting Docker containers, so it's still fast enough to run on
    every local test invocation. See
-   `phase2/app/worker/tests/test_service_integration.py`.
+   `phase2-implementation-of-the-service/app/worker/tests/test_service_integration.py`.
 3. **Docker/compose end-to-end tests** — the full cluster (worker, real
    Redis, dispatcher) built and started via `docker compose`, exercised over
    the network exactly as it runs in production. Slowest and closest to
@@ -102,7 +103,7 @@ speed against fidelity to the real deployment:
 Run a service's tests with `uv`, from that service's directory:
 
 ```bash
-cd phase2/app/worker
+cd phase2-implementation-of-the-service/app/worker
 uv sync --group dev   # installs pytest + fakeredis alongside the app deps
 uv run pytest
 ```
