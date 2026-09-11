@@ -1,0 +1,20 @@
+services:
+  dispatcher:
+    build:
+      context: ./app/dispatcher
+    ports:
+      - "18861:18861"
+
+  worker:
+    build:
+      context: ./app/worker
+    depends_on:
+      - dispatcher
+    environment:
+      DISPATCHER_HOST: dispatcher
+      DISPATCHER_PORT: 18861
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
