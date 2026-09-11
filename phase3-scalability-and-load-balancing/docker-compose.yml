@@ -1,0 +1,52 @@
+services:
+  dispatcher:
+    build:
+      context: ./app/dispatcher
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+
+  worker-1:
+    build:
+      context: ./app/worker
+    depends_on:
+      - dispatcher
+      - redis
+    environment:
+      WORKER_ID: worker-1
+      DISPATCHER_HOST: dispatcher
+      DISPATCHER_PORT: 8080
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  worker-2:
+    build:
+      context: ./app/worker
+    depends_on:
+      - dispatcher
+      - redis
+    environment:
+      WORKER_ID: worker-2
+      DISPATCHER_HOST: dispatcher
+      DISPATCHER_PORT: 8080
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  worker-3:
+    build:
+      context: ./app/worker
+    depends_on:
+      - dispatcher
+      - redis
+    environment:
+      WORKER_ID: worker-3
+      DISPATCHER_HOST: dispatcher
+      DISPATCHER_PORT: 8080
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
