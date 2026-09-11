@@ -107,3 +107,66 @@ cd phase2-implementation-of-the-service/app/worker
 uv sync --group dev   # installs pytest + fakeredis alongside the app deps
 uv run pytest
 ```
+
+## Phase 3: Running the Cluster (Docker Compose)
+
+Phase 3 replaces the dispatcher↔worker RPyC link with a plain WebSocket
+(workers connect out to the dispatcher's `/ws/worker` route), so the whole
+cluster — dispatcher, three workers, and Redis — comes up with Compose
+alone:
+
+```bash
+cd phase3-scalability-and-load-balancing
+docker compose up --build -d
+```
+
+This starts:
+
+- `dispatcher` — REST API on `localhost:8080` (`POST /v1/wordcount`), plus
+  the `/ws/worker` WebSocket route workers register on
+- `worker-1`, `worker-2`, `worker-3` — named services (not Compose
+  `replicas`, so container names stay stable) that connect out to the
+  dispatcher and register themselves
+- `redis` — result cache, on `localhost:6379`
+
+Confirm all three workers registered:
+
+```bash
+docker compose logs dispatcher | grep registered
+```
+
+Tear the cluster down with:
+
+```bash
+docker compose down
+```
+
+## Phase 3: End-to-End Testing
+
+With the cluster running, exercise the real HTTP + WebSocket path with a
+plain `curl` request against the dispatcher:
+
+```bash
+curl -s -X POST http://localhost:8080/v1/wordcount \
+  -H "Content-Type: application/json" \
+  -d '{"file_url": "https://www.gutenberg.org/cache/epub/79552/pg79552.txt", "keyword": "the"}'
+```
+
+Scenarios worth checking manually:
+
+- **Success path** — response is `200` with a `count`, and `worker_id`
+  names one of the three running workers.
+- **Caching** — send the same request again; `"cached"` should flip from
+  `false` to `true`.
+- **Failover** — stop one worker (`docker compose stop worker-1`) and send
+  another request; it should still succeed, served by a remaining worker.
+  Restart it with `docker compose start worker-1`.
+- **No workers online** — `docker compose stop worker-1 worker-2
+  worker-3`, then the same request should return `503 no_worker_available`.
+- **Bad input** — omitting `file_url` or `keyword` returns `400
+  bad_request`.
+
+This is currently a manual checklist rather than an automated suite;
+promoting it to a scripted `pytest` e2e test (driving `docker compose`
+itself and asserting on these same scenarios over the real network) is a
+natural next step.
